@@ -7,6 +7,8 @@ import time
 
 _first_re = re.compile("(.)([A-Z][a-z]+)")
 _cap_re = re.compile("([a-z0-9])([A-Z])")
+
+
 def _to_snake(name):
     s1 = _first_re.sub(r"\1_\2", name)
     return _cap_re.sub(r"\1_\2", s1).lower()
@@ -36,7 +38,7 @@ class HQUserInfo:
         self.referral_url = kwargs.get("referral_url")  # property?
         self.high_score = kwargs.get("high_score")
         self.games_played = kwargs.get("games_played")
-        self.win_count = kwargs.get("win_count") # different than leaderboard.alltime_wins cuz i dont know, i think this is the accurate one
+        self.win_count = kwargs.get("win_count")  # different than leaderboard.alltime_wins cuz i dont know, i think this is the accurate one
         self.blocked = kwargs.get("blocked")
         self.blocks_me = kwargs.get("blocks_me")
         try:
@@ -212,8 +214,8 @@ class HQClient:
                 raise Exception("user not found")
             user_id = search[0].user_id
         response = requests.put(f"https://api-quiz.hype.space/friends/{user_id}/status", headers=self.default_headers, data={
-                "status": "ACCEPTED"
-            }).json()
+            "status": "ACCEPTED"
+        }).json()
         return {
             "requested_user": self.user_info(response["requestedUser"]["userId"]),
             "requesting_user": self.user_info(response["requestingUser"]["userId"]),
@@ -295,7 +297,7 @@ def username_available(username: str) -> bool:
     return not bool(requests.post("https://api-quiz.hype.space/usernames/available", data={"username": username}).json())
 
 
-def create_user(username: str, verification_id: str, referral: str="", region: str="UK", language: str="en"):
+def create_user(username: str, verification_id: str, referral: str, region: str="US", language: str="en"):
     return requests.post("https://api-quiz.hype.space/users", data={
         "country": region,
         "language": language,
