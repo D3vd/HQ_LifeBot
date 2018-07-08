@@ -2,6 +2,7 @@ import string
 import random
 from pprint import pprint
 import pyhq as hq
+from pyhq import HQClient
 import networking as n
 import asyncio
 import requests
@@ -10,16 +11,28 @@ import requests
 def generate_account():
 
     phone_number = input("Phone Number : ")
-    verification_id = hq.verify(phone_number)
+    try:
+        verification_id = hq.verify(phone_number)["verificationId"]
+    except KeyError:
+        print('Enter a valid number!')
+        return '', '', ''
 
     otp = input("OTP : ")
     sub_code_res = hq.submit_code(verification_id, otp)
+
+    if 'error' in sub_code_res:
+        print(sub_code_res['error'])
+        return '', '', ''
 
     if sub_code_res['auth'] is not None:
         print("Sorry, this number is associated with {}".format(sub_code_res['auth']['username']))
         return '', '', ''
 
     referral_code = input("Referral : ")
+
+    if hq.username_available(referral_code):
+        print('Not a valid Referral Code!')
+        return '', '', ''
 
     username = ''.join(random.choice(string.ascii_lowercase) for _ in range(6)) + ''.join(random.choice(string.digits) for _ in range(3))
 
@@ -30,10 +43,6 @@ def generate_account():
         return '', '', ''
 
     auth_token = res['authToken']
-
-    # BEARER_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIxNDc3MzU5LCJ1c2VybmFtZSI6Imh5ZWFsdDk0MSIsImF2YXRhclVybCI6Imh0dHBzOi8vZDJ4dTFoZG9taDNucnguY2xvdWRmcm9udC5uZXQvZGVmYXVsdF9hdmF0YXJzL1VudGl0bGVkLTFfMDAwM19yZWQucG5nIiwidG9rZW4iOm51bGwsInJvbGVzIjpbXSwiY2xpZW50IjoiIiwiZ3Vlc3RJZCI6bnVsbCwidiI6MSwiaWF0IjoxNTMwODM3NTg5LCJleHAiOjE1Mzg2MTM1ODksImlzcyI6Imh5cGVxdWl6LzEifQ.-8Giv3aTj0g-zItZb5lzlUt_hA1tRqcQLoi9NMrhvFU'
-    # BEARER_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIxNTI0NTg5LCJ1c2VybmFtZSI6InRzZHVvZzA2NCIsImF2YXRhclVybCI6Imh0dHBzOi8vZDJ4dTFoZG9taDNucnguY2xvdWRmcm9udC5uZXQvZGVmYXVsdF9hdmF0YXJzL1VudGl0bGVkLTFfMDAwMF9ncmVlbi5wbmciLCJ0b2tlbiI6bnVsbCwicm9sZXMiOltdLCJjbGllbnQiOiIiLCJndWVzdElkIjpudWxsLCJ2IjoxLCJpYXQiOjE1MzA5NzgxMzQsImV4cCI6MTUzODc1NDEzNCwiaXNzIjoiaHlwZXF1aXovMSJ9.dPK182mjbblwHpw0oz7RCxjai54Y4nvQdIwchOcr-rE'
-    # BEARER_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIxNTQ2NTE1LCJ1c2VybmFtZSI6InF0b2N6cjY1MiIsImF2YXRhclVybCI6Imh0dHBzOi8vZDJ4dTFoZG9taDNucnguY2xvdWRmcm9udC5uZXQvZGVmYXVsdF9hdmF0YXJzL1VudGl0bGVkLTFfMDAwM19yZWQucG5nIiwidG9rZW4iOm51bGwsInJvbGVzIjpbXSwiY2xpZW50IjoiIiwiZ3Vlc3RJZCI6bnVsbCwidiI6MSwiaWF0IjoxNTMxMDM3MzczLCJleHAiOjE1Mzg4MTMzNzMsImlzcyI6Imh5cGVxdWl6LzEifQ.GOq9aqqgEWpDr2Q3tEIryQgf5s8x2_AWfwCu9NvOb9Y'
 
     return username, auth_token, referral_code
 
@@ -79,7 +88,7 @@ def read_data(url):
 
     file = open('data.txt', 'r')
     for l in file.readlines():
-        u, a, r = l.split()
+        u, auth_token, r = l.split()
 
     # do something with data
 
@@ -89,7 +98,7 @@ def read_data(url):
 if __name__ == '__main__':
 
     prompt = '\n> '
-    print('Create Account - c \nStimulate Play Game - s ')
+    print('Create Account - c \nStimulate Play Game - s\nQuit - q ')
     op = ''
 
     while op != 'q':
@@ -114,11 +123,9 @@ if __name__ == '__main__':
 
             read_data(url)
 
+        elif op == 'q':
+            print('Quiting....')
+            break
+
         else:
             print('Wrong option try again')
-
-
-
-
-
-

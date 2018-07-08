@@ -284,7 +284,7 @@ def verify(phone: str) -> str:
         return requests.post("https://api-quiz.hype.space/verifications", data={
             "method": "sms",
             "phone": "+1" + phone
-        }).json()["verificationId"]
+        }).json()
     except KeyError:
         raise Exception("invalid phone number")
 
