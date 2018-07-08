@@ -65,21 +65,36 @@ def get_socket_url(token):
 
     return socket_url
 
-def read_data():
 
-    file =
+def get_socket_url():
+
+    main_url = 'https://api-quiz.hype.space/shows/now'
+    response_data = requests.get(main_url)
+
+    socket_url = response_data['broadcast']['socketUrl'].replace("https", "wss")
+    return socket_url
 
 
-# def stimulate_play_game(BEARER_TOKEN):
+def read_data(url):
+
+    file = open('data.txt', 'r')
+    for l in file.readlines():
+        u, a, r = l.split()
+
+    # do something with data
+
+    file.close()
 
 
 if __name__ == '__main__':
 
     prompt = '\n> '
     print('Create Account - c \nStimulate Play Game - s ')
-    op = input(prompt)
+    op = ''
 
     while op != 'q':
+
+        op = input(prompt)
 
         if op == 'c':
 
@@ -95,12 +110,13 @@ if __name__ == '__main__':
                 print('The show not active, Try again!')
                 continue
 
+            url = get_socket_url()
 
+            read_data(url)
 
         else:
             print('Wrong option try again')
 
-        op = input(prompt)
 
 
 
