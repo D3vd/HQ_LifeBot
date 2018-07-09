@@ -31,17 +31,17 @@ def generate_account():
         print('Not a valid Referral Code!')
         return '', '', ''
 
-    username = ''.join(random.choice(string.ascii_lowercase) for _ in range(6)) + ''.join(random.choice(string.digits) for _ in range(3))
+    user_name = ''.join(random.choice(string.ascii_lowercase) for _ in range(6)) + ''.join(random.choice(string.digits) for _ in range(3))
 
-    if hq.username_available(username):
-        res = hq.create_user(username, verification_id, referral_code)
+    if hq.username_available(user_name):
+        res = hq.create_user(user_name, verification_id, referral_code)
     else:
         print("Try Again")
         return '', '', ''
 
     auth_token = res['authToken']
 
-    return username, auth_token, referral_code
+    return user_name, auth_token, referral_code
 
 
 def write_data(u, a, r):
@@ -53,8 +53,8 @@ def write_data(u, a, r):
 
 def show_active():
 
-    url = 'https://api-quiz.hype.space/shows/now'
-    response = requests.get(url).json()
+    main_url = 'https://api-quiz.hype.space/shows/now'
+    response = requests.get(main_url).json()
     return response['active']
 
 
@@ -67,28 +67,28 @@ def get_socket_url():
     return socket_url
 
 
-def read_data(url):
+def read_data(socket_url):
 
     file = open('data.txt', 'r')
     for l in file.readlines():
         u, auth_token, r = l.split()
 
-        status = connect_websocket(url, auth_token)
+        status = connect_websocket(socket_url, auth_token)
 
         if status:
-            print('Successfully created life for {} with username {}'.format(u, r))
+            print('Successfully created life for {} with username {}'.format(r, u))
         else:
-            print('Unknown problem while creating life for {}'.format(u))
+            print('Unknown problem while creating life for {}'.format(r))
 
     file.truncate()
 
 
-def connect_websocket(url, auth_token):
+def connect_websocket(socket_url, auth_token):
 
     headers = {"Authorization": f"Bearer {auth_token}",
                "x-hq-client": "Android/1.3.0"}
     try:
-        websocket = WebSocket(url)
+        websocket = WebSocket(socket_url)
         for header, value in headers.items():
             websocket.add_header(str.encode(header), str.encode(value))
     except:
@@ -129,7 +129,7 @@ if __name__ == '__main__':
             print('\nSuccessfully created lives....')
 
         elif op == 'q':
-            print('Quiting....')
+            print('Quitting....')
             break
 
         else:
