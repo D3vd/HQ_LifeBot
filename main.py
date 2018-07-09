@@ -1,11 +1,8 @@
 import string
 import random
-from pprint import pprint
 import pyhq as hq
-from pyhq import HQClient
-import networking as n
-import asyncio
 import requests
+from lomond import WebSocket
 
 
 def generate_account():
@@ -17,15 +14,15 @@ def generate_account():
         print('Enter a valid number!')
         return '', '', ''
 
-    otp = input("OTP : ")
-    sub_code_res = hq.submit_code(verification_id, otp)
+    code = input("Code : ")
+    sub_code_res = hq.submit_code(verification_id, code)
 
     if 'error' in sub_code_res:
         print(sub_code_res['error'])
         return '', '', ''
 
     if sub_code_res['auth'] is not None:
-        print("Sorry, this number is associated with {}".format(sub_code_res['auth']['username']))
+        print("Sorry, this number is already associated with {}".format(sub_code_res['auth']['username']))
         return '', '', ''
 
     referral_code = input("Referral : ")
@@ -61,24 +58,10 @@ def show_active():
     return response['active']
 
 
-def get_socket_url(token):
-
-    main_url = f"https://api-quiz.hype.space/shows/now?type="
-    headers = {"Authorization": f"Bearer {token}", "x-hq-client": "Android/1.3.0"}
-
-    response_data = asyncio.get_event_loop().run_until_complete(n.get_json_response(main_url, timeout=1.5, headers=headers))
-
-    pprint(response_data)
-
-    socket_url = response_data['broadcast']['socketUrl'].replace("https", "wss")
-
-    return socket_url
-
-
 def get_socket_url():
 
     main_url = 'https://api-quiz.hype.space/shows/now'
-    response_data = requests.get(main_url)
+    response_data = requests.get(main_url).json()
 
     socket_url = response_data['broadcast']['socketUrl'].replace("https", "wss")
     return socket_url
@@ -90,9 +73,28 @@ def read_data(url):
     for l in file.readlines():
         u, auth_token, r = l.split()
 
-    # do something with data
+        status = connect_websocket(url, auth_token)
 
-    file.close()
+        if status:
+            print('Successfully created life for {} with username {}'.format(u, r))
+        else:
+            print('Unknown problem while creating life for {}'.format(u))
+
+    file.truncate()
+
+
+def connect_websocket(url, auth_token):
+
+    headers = {"Authorization": f"Bearer {auth_token}",
+               "x-hq-client": "Android/1.3.0"}
+    try:
+        websocket = WebSocket(url)
+        for header, value in headers.items():
+            websocket.add_header(str.encode(header), str.encode(value))
+    except:
+        return False
+
+    return True
 
 
 if __name__ == '__main__':
@@ -120,8 +122,11 @@ if __name__ == '__main__':
                 continue
 
             url = get_socket_url()
+            print("Connecting to socket : " + url)
 
             read_data(url)
+
+            print('\nSuccessfully created lives....')
 
         elif op == 'q':
             print('Quiting....')
