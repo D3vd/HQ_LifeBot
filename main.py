@@ -80,17 +80,29 @@ def read_data(socket_url):
         else:
             print('Unknown problem while creating life for {}'.format(r))
 
-    file.truncate()
+    file.close()
+    delete_data()
+
+
+def delete_data():
+    f = open('data.txt', 'r+')
+    f.truncate()
 
 
 def connect_websocket(socket_url, auth_token):
 
     headers = {"Authorization": f"Bearer {auth_token}",
                "x-hq-client": "Android/1.3.0"}
+    websocket = WebSocket(socket_url)
+    cnt = 0
     try:
-        websocket = WebSocket(socket_url)
         for header, value in headers.items():
             websocket.add_header(str.encode(header), str.encode(value))
+        for event in websocket.connect(ping_rate=5):
+            if 'interaction' in str(event):
+                cnt += 1
+            if cnt > 5:
+                websocket.close()
     except:
         return False
 
