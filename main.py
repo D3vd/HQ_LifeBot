@@ -51,6 +51,10 @@ def write_data(u, a, r):
     file.write('{} {} {}\n'.format(u, a, r))
     file.close()
 
+    backup_file = open('backup.txt', 'a')
+    backup_file.write('{} {} {}\n'.format(u, a, r))
+    backup_file.close()
+
 
 def show_active():
 
@@ -113,7 +117,7 @@ def connect_websocket(socket_url, auth_token):
 if __name__ == '__main__':
 
     prompt = '\n> '
-    print('Create Account - c \nStimulate Play Game - s\nQuit - q ')
+    print('Create Account - c \nStimulate Game - s\nQuit - q ')
     op = ''
 
     while op != 'q':

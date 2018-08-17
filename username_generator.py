@@ -4,7 +4,7 @@ import random
 
 
 def get_names():
-    url = 'https://uinames.com/api/'
+    url = 'https://uinames.com/api/?region=united%20states'
     response = requests.get(url).json()
 
     # Since names from these regions have special characters they are skipped to avoid errors
