@@ -1,8 +1,7 @@
-import string
-import random
 import pyhq as hq
 import requests
 from lomond import WebSocket
+from username_generator import create_username
 
 
 def generate_account():
@@ -31,7 +30,9 @@ def generate_account():
         print('Not a valid Referral Code!')
         return '', '', ''
 
-    user_name = ''.join(random.choice(string.ascii_lowercase) for _ in range(6)) + ''.join(random.choice(string.digits) for _ in range(3))
+    # user_name = ''.join(random.choice(string.ascii_lowercase) for _ in range(6)) + ''.join(random.choice(string.digits) for _ in range(3))
+
+    user_name = create_username()
 
     if hq.username_available(user_name):
         res = hq.create_user(user_name, verification_id, referral_code)
