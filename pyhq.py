@@ -279,14 +279,13 @@ class HQClient:
         })
 
 
-def verify(phone: str) -> str:
-    try:
-        return requests.post("https://api-quiz.hype.space/verifications", data={
+def verify(phone: str, headers: dict={}) -> str:
+    return requests.post("https://api-quiz.hype.space/verifications", headers={
+            "x-hq-client": headers.get("x-hq-client") or "iOS/1.3.12 b96"
+        }, data={
             "method": "sms",
             "phone": "+1" + phone
         }).json()
-    except KeyError:
-        raise Exception("invalid phone number")
 
 
 def submit_code(verification_id: str, code: str) -> dict:
